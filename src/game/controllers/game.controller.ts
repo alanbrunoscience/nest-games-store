@@ -28,6 +28,18 @@ export class GameController {
         return this.gameService.findByTitle(game_name);
     }
 
+    @Get('/highest-prices/:price')
+    @HttpCode(HttpStatus.OK)
+    higherPricesThanRef(@Param('price', ParseIntPipe) price: number): Promise<Game[]> {
+        return this.gameService.higherPricesThanRef(price);
+    }
+
+    @Get('/lowest-prices/:price')
+    @HttpCode(HttpStatus.OK)
+    lowerPricesThanRef(@Param('price', ParseIntPipe) price: number): Promise<Game[]> {
+        return this.gameService.lowerPricesThanRef(price);
+    }
+
     @Post()
     @HttpCode(HttpStatus.CREATED)
     create(@Body() game: Game): Promise<Game>{

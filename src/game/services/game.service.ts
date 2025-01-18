@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DeleteResult, ILike, Repository } from "typeorm";
+import { DeleteResult, ILike, LessThan, MoreThan, Repository } from "typeorm";
 import { Game } from "../entities/game.entity";
 import { CategoryService } from "../../category/services/category.service";
 
@@ -47,6 +47,28 @@ export class GameService {
             relations:{
                 category: true
             }
+        });
+    }
+
+    async higherPricesThanRef(price: number): Promise<Game[]> {
+        return this.gameRepository.find({
+            where: {
+                price: MoreThan(price)
+            },
+            order: {
+                id: "ASC"
+            },
+        });
+    }
+
+    async lowerPricesThanRef(price: number): Promise<Game[]> {
+        return this.gameRepository.find({
+            where: {
+                price: LessThan(price)
+            },
+            order: {
+                id: "DESC"
+            },
         });
     }
 
