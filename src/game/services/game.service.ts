@@ -1,98 +1,97 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { DeleteResult, ILike, LessThan, MoreThan, Repository } from "typeorm";
-import { Game } from "../entities/game.entity";
-import { CategoryService } from "../../category/services/category.service";
-
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DeleteResult, ILike, LessThan, MoreThan, Repository } from 'typeorm';
+import { Game } from '../entities/game.entity';
+import { CategoryService } from '../../category/services/category.service';
 
 @Injectable()
 export class GameService {
+  constructor(
+    @InjectRepository(Game)
+    private gameRepository: Repository<Game>,
+    private categoryService: CategoryService,
+  ) {}
 
-    constructor(
-        @InjectRepository(Game)
-        private gameRepository: Repository<Game>,
-        private categoryService: CategoryService
-    ) {}
+  async findAll(): Promise<Game[]> {
+    return this.gameRepository.find({
+      relations: {
+        category: true,
+      },
+    });
+  }
 
-    async findAll(): Promise<Game[]> {
-        return this.gameRepository.find({
-            relations:{
-                category: true
-            }
-        });
-    }
+  async findById(id: number): Promise<Game> {
+    const postagem = await this.gameRepository.findOne({
+      where: {
+        id,
+      },
+      relations: {
+        category: true,
+      },
+    });
 
-    async findById(id: number): Promise<Game> {
+    if (!postagem)
+      throw new HttpException('Game not found!', HttpStatus.NOT_FOUND);
 
-        const postagem = await this.gameRepository.findOne({
-            where: { 
-                id 
-            },
-            relations:{
-                category: true
-            }
-        })
+    return postagem;
+  }
 
-        if(!postagem)
-            throw new HttpException('Game not found!', HttpStatus.NOT_FOUND)
+  async findByTitle(game_name: string): Promise<Game[]> {
+    return this.gameRepository.find({
+      where: {
+        game_name: ILike(`%${game_name}%`),
+      },
+      relations: {
+        category: true,
+      },
+    });
+  }
 
-        return postagem;
-    }
+  async higherPricesThanRef(price: number): Promise<Game[]> {
+    return this.gameRepository.find({
+      where: {
+        price: MoreThan(price),
+      },
+      order: {
+        id: 'ASC',
+      },
+      relations: {
+        category: true,
+      },
+    });
+  }
 
-    async findByTitle(game_name: string): Promise<Game[]> {
-        return this.gameRepository.find({
-            where: {
-                game_name: ILike(`%${game_name}%`)
-            },
-            relations:{
-                category: true
-            }
-        });
-    }
+  async lowerPricesThanRef(price: number): Promise<Game[]> {
+    return this.gameRepository.find({
+      where: {
+        price: LessThan(price),
+      },
+      order: {
+        id: 'DESC',
+      },
+      relations: {
+        category: true,
+      },
+    });
+  }
 
-    async higherPricesThanRef(price: number): Promise<Game[]> {
-        return this.gameRepository.find({
-            where: {
-                price: MoreThan(price)
-            },
-            order: {
-                id: "ASC"
-            },
-        });
-    }
+  async create(game: Game): Promise<Game> {
+    await this.categoryService.findById(game.category.id);
 
-    async lowerPricesThanRef(price: number): Promise<Game[]> {
-        return this.gameRepository.find({
-            where: {
-                price: LessThan(price)
-            },
-            order: {
-                id: "DESC"
-            },
-        });
-    }
+    return await this.gameRepository.save(game);
+  }
 
-    async create(game: Game): Promise<Game> {
+  async update(game: Game): Promise<Game> {
+    await this.findById(game.id);
 
-        await this.categoryService.findById(game.category.id);
+    await this.categoryService.findById(game.category.id);
 
-        return await this.gameRepository.save(game);
-    }
+    return await this.gameRepository.save(game);
+  }
 
-    async update(game: Game): Promise<Game>{
-        
-        await this.findById(game.id);
+  async delete(id: number): Promise<DeleteResult> {
+    await this.findById(id);
 
-        await this.categoryService.findById(game.category.id);
-        
-        return await this.gameRepository.save(game);
-    }
-
-    async delete(id: number): Promise<DeleteResult>{
-        
-        await this.findById(id)
-
-        return await this.gameRepository.delete(id)
-    }
-
+    return await this.gameRepository.delete(id);
+  }
 }

@@ -19,7 +19,7 @@ import { CategoryModule } from './category/category.module';
       logging: true,
     }),
     GameModule,
-    CategoryModule
+    CategoryModule,
   ],
   controllers: [],
   providers: [],
