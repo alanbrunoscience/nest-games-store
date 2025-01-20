@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseFloatPipe,
   ParseIntPipe,
   Post,
   Put,
@@ -38,7 +39,7 @@ export class GameController {
   @Get('/highest-prices/:price')
   @HttpCode(HttpStatus.OK)
   higherPricesThanRef(
-    @Param('price', ParseIntPipe) price: number,
+    @Param('price', ParseFloatPipe) price: number,
   ): Promise<Game[]> {
     return this.gameService.higherPricesThanRef(price);
   }
@@ -46,7 +47,7 @@ export class GameController {
   @Get('/lowest-prices/:price')
   @HttpCode(HttpStatus.OK)
   lowerPricesThanRef(
-    @Param('price', ParseIntPipe) price: number,
+    @Param('price', ParseFloatPipe) price: number,
   ): Promise<Game[]> {
     return this.gameService.lowerPricesThanRef(price);
   }
